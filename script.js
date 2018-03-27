@@ -1,224 +1,171 @@
-    ymaps.ready(init);
-    var myPlacemark; 
-    var myMap;
-    var myCollection;
-    function init() {
-        var coords = [47.55, 38.7]; 
- //       coords[0] = 46.8451;
-  //      coords[1] = 40.7765;
-           
-         myMap = new ymaps.Map('myMap', {
-         center: [47.55, 38.7],
-              zoom: 12
-       //     ,            behaviors: ['ruler', 'scrollZoom']
-          });
 
-          myPlacemark = createPlacemark(coords);
-          myMap.geoObjects.add(myPlacemark);
-          // Слушаем событие окончания перетаскивания на метке.
-          myPlacemark.events.add('dragend', function() {
-              coords = myPlacemark.geometry.getCoordinates();
-              Latitude.value = coords[0].toPrecision(6);
-              Longitude.value = coords[1].toPrecision(6);
-          }); 
-          
-          myMap.events.add('click', function(e) {
-              var coords = e.get('coords');
-              Latitude.value = coords[0].toPrecision(6);
-              Longitude.value = coords[1].toPrecision(6);
-              // Если метка уже создана – просто передвигаем ее.
-              if (myPlacemark) myPlacemark.geometry.setCoordinates(coords);
-          });
- //       myMap.behaviors.enable('drag');
-      myMap.setType('yandex#hybrid');
- //       myMap.controls.add(new ymaps.control.TypeSelector());        
-        myCollection = new ymaps.GeoObjectCollection({}, { preset: 'islands#redIcon' });
-    }
-    function createPlacemark(coords) {
-        return new ymaps.Placemark(coords, {
-            iconCaption: 'можно тащить'
-        }, {
-            preset: 'islands#violetDotIconWithCaption',
-            draggable: true
-        });
-    }
-    function load_RSS() {
-        var title;
-        var doc_root;
-        var doc_channel;
-        var polygon_node;
-        var soil_node;
-        var sHTML = 'нет объектов в зоне выбора';
-        var t_string;
-        var url = "https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
-      var refer = url + Latitude.value + "&longitude=" + Longitude.value; //'test_TM.xml';  //
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', refer, false); // + '&r=' + Math.random()
-      xhr.setRequestHeader('Content-Type', 'text/xml; charset=utf-8'); //header('Content-Type: text/plain; charset=windows-1251');
-      xhr.send();
-      if (xhr.status != 200) {
-          alert('Ошибка ' + xhr.status + ': ' + xhr.statusText);
-      } else {
-          //     if (!(xhr.responseXML.documentElement == null)) {
-          doc_root = xhr.responseXML;
+ymaps.ready(init);
+var myPlacemark; 
+var myMap;
+var myCollection;
+var storedData = {};
+	
+function init() {
+	var coords = [47.55, 38.7]; 
+	   
+	myMap = new ymaps.Map('myMap', {
+	center: [47.55, 38.7],
+	  zoom: 12
+	//     ,            behaviors: ['ruler', 'scrollZoom']
+	});
+
+	myPlacemark = createPlacemark(coords);
+	myMap.geoObjects.add(myPlacemark);
+	// Слушаем событие окончания перетаскивания на метке.
+	myPlacemark.events.add('dragend', function() {
+		coords = myPlacemark.geometry.getCoordinates();
+		Latitude.value = coords[0].toPrecision(6);
+		Longitude.value = coords[1].toPrecision(6);
+	}); 
+
+	myMap.events.add('click', function(e) {
+	  var coords = e.get('coords');
+	  Latitude.value = coords[0].toPrecision(6);
+	  Longitude.value = coords[1].toPrecision(6);
+	  // Если метка уже создана – просто передвигаем ее.
+	  if (myPlacemark) myPlacemark.geometry.setCoordinates(coords);
+	});
+	//       myMap.behaviors.enable('drag');
+	myMap.setType('yandex#hybrid');
+	//       myMap.controls.add(new ymaps.control.TypeSelector());        
+	myCollection = new ymaps.GeoObjectCollection({}, { preset: 'islands#redIcon' });
+}
+
+function createPlacemark(coords) {
+	return new ymaps.Placemark(coords, {
+		iconCaption: 'можно тащить'
+	}, {
+		preset: 'islands#violetDotIconWithCaption',
+		draggable: true
+	});
+}
+
+function load_RSS() {
+	var title;
+	var doc_root;
+	var doc_channel;
+	var polygon_node;
+	var soil_node;
+	var sHTML = 'нет объектов в зоне выбора';
+	var t_string;
+	//var url = "https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
+	var url = " http://db.soil.msu.ru/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
+	var refer = url + Latitude.value + "&longitude=" + Longitude.value; //'test_TM.xml';  //
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', refer, false); // + '&r=' + Math.random()
+	xhr.setRequestHeader('Content-Type', 'text/xml; charset=utf-8'); //header('Content-Type: text/plain; charset=windows-1251');
+	xhr.send();
+	if (xhr.status != 200) {
+		alert('Ошибка ' + xhr.status + ': ' + xhr.statusText);
+	} else {
+		//     if (!(xhr.responseXML.documentElement == null)) {
+		doc_root = xhr.responseXML;
  ///// parse and display Description
-          if (doc_root.getElementsByTagName('item').length >0) {
-              var doc_item;
-              if (doc_root.getElementsByTagName('Полигоны_агрохимического_обследования').length > 0) {
-                  doc_item = doc_root.getElementsByTagName('Полигоны_агрохимического_обследования')[0];
-                  t_string = '<table border="1" align="center">';
-                  for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++) {
-                      t_string = t_string + '<tr><td>' + doc_item.childNodes[0].childNodes[i].nodeName + '</td><td>' +
-                       doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
-                      if (doc_item.childNodes[0].childNodes[i].nodeName == 'Район') iDistrict.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
-                      if (doc_item.childNodes[0].childNodes[i].nodeName == 'Фосфор') iP.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
-                      if (doc_item.childNodes[0].childNodes[i].nodeName == 'Калий') iK.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;                    
-                  }
-                  t_string = t_string + '</table>';
-                  calculate();
-              }
-             document.getElementById('for_test').innerHTML = t_string;
+		if (doc_root.getElementsByTagName('item').length >0) {
+			var doc_item;
+			if (doc_root.getElementsByTagName('Полигоны_агрохимического_обследования').length > 0) {
+				doc_item = doc_root.getElementsByTagName('Полигоны_агрохимического_обследования')[0];
+				t_string = '<table border="1" align="center">';
+				for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++) {
+					t_string = t_string + '<tr><td>' + doc_item.childNodes[0].childNodes[i].nodeName + '</td><td>' +
+					doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
+					if (doc_item.childNodes[0].childNodes[i].nodeName == 'Район') iDistrict.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
+					if (doc_item.childNodes[0].childNodes[i].nodeName == 'Фосфор') iP.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
+					if (doc_item.childNodes[0].childNodes[i].nodeName == 'Калий') iK.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;           
+				}
+				t_string = t_string + '</table>';
+				calculate();
+			}
+			document.getElementById('for_test').innerHTML = t_string;
 
-                  //// parse Geography
-                  polygon_node = doc_root.getElementsByTagName('item')[0].childNodes[4].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
-                  if (polygon_node.xml) {
-                      t_string = polygon_node.nodeValue //.xml             // Converts the xml object to string  (  For IE)
-                  } else {
-                      t_string = new XMLSerializer().serializeToString(polygon_node);      // Converts the xml object to string (For rest browsers, mozilla, etc)
-                  }
-                  var arr_a = t_string.split('>')[1];
-                  var arr_c = arr_a.split('<')[0];
-                  arr_a = arr_c.split(' ');
-                  var t;
-                  var arr_b = [['1', '2'], ['3', '4']];
-                  for (var i = 0; i < arr_a.length / 2; i++) {
-                      t = arr_a[i * 2] + ',' + arr_a[i * 2 + 1];
-                      arr_b[i] = t.split(',');
-                  }
-                  var myPolygon1 = new ymaps.GeoObject({ geometry: { type: "Polygon", coordinates: [arr_b] },
-                      properties: { hintContent: "Многоугольник" }
-                  },
-              { interactivityModel: 'default#transparent', fillColor: '#7df9ff33', opacity: 0.5, strokeColor: '#FF0000',
-                  // Прозрачность обводки.
-                  strokeOpacity: 0.5, strokeWidth: 2
-              });
-                  myCollection.add(myPolygon1);
-                  myMap.geoObjects.add(myCollection);
-                  /// end Geography
-
-
-              } //// end Description
+			  //// parse Geography
+			  polygon_node = doc_root.getElementsByTagName('item')[0].childNodes[4].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
+			if (polygon_node.xml) {
+				t_string = polygon_node.nodeValue //.xml             // Converts the xml object to string  (  For IE)
+			} else {
+				t_string = new XMLSerializer().serializeToString(polygon_node);      // Converts the xml object to string (For rest browsers, mozilla, etc)
+			}
+			var arr_a = t_string.split('>')[1];
+			var arr_c = arr_a.split('<')[0];
+			arr_a = arr_c.split(' ');
+			var t;
+			var arr_b = [['1', '2'], ['3', '4']];
+			for (var i = 0; i < arr_a.length / 2; i++) {
+				t = arr_a[i * 2] + ',' + arr_a[i * 2 + 1];
+				arr_b[i] = t.split(',');
+			}
+			var myPolygon1 = new ymaps.GeoObject({ geometry: { type: "Polygon", coordinates: [arr_b] },
+				properties: { hintContent: "Многоугольник" }
+			},
+			{ interactivityModel: 'default#transparent', fillColor: '#7df9ff33', opacity: 0.5, strokeColor: '#FF0000',
+			  // Прозрачность обводки.
+			  strokeOpacity: 0.5, strokeWidth: 2
+			});
+			myCollection.add(myPolygon1);
+			myMap.geoObjects.add(myCollection);
+			/// end Geography
+		} //// end Description
               
             ///  else document.getElementById('details').src = refer;        
 
-          } // doc xhr
+    } // doc xhr
+}
+   
+var scoeff = '1.4|1.3|1|0.7|0.3|0.2|1.2|1.1|1|0.5|0.2|0.2|1.5|1.2|1|0.7|0.5|0.3|1.3|1.1|1|0.5|0.3|0.2|1|1|1|0.3|0|0|1.5|1.3|1|0.7|0.5|0.3|';
 
-      }
-    var sCrop_Names = 'не определено|Бахчевые|Бобы  кормовые|Горох|Горох овощной|Горох посевной|Горчица|Горчица полевая|Горчица сарептская|Злаково-бобовая смесь|Картофель|Кукуруза + подсолнечник|Кукуруза на зерно|Кукуруза на силос|Кукуруза+зерносмесь|Лён-долгунец|Лён-кудряш|Лугопастбищные травы злаковые|Люцерна|Люцерна желтая|Люцерна синяя|Люцерна+смесь злаковых трав|Люцерна+Ячмень|Многолетние травы|Многолетние травы - сено|Многолетние травы/Суданская трава|не определено|Нут|Овёс|Овёс/Суданская трава|Овощи|Однолетние травы - сено|Озимый ячмень|Пар черный|Подсолнечник|Подсолнечник+зерносмесь|Поле вспаханное|Поле засоренное|Поле продискованное|Просо|Просо зерновое|Пушица влагалищная|Пшеница озимая|Пшеница озимая по пару|Пшеница озимая после непаровых|Пшеница озимая+пшеница яровая|Рапс озимый|Рапс яровой|Редька масличная|Рис|Рожь|Рыжик|Рыжик озимый|Свёкла сахарная|Сидеральный пар|Сорго|Суданка|Суданская трава|Суданская трава+рапс|Тритикале|Тыква крупноплодная|Чечевица|Эспарцет|Ячмень озимый|Ячмень яровой|Ячмень/Эспарцет|Ячмень+бобы|Ячмень+горох|';
-    var sCrops_id = '1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|';
-    var sCrop_Groups_id = '1|1|1|1|1|1|1|1|1|1|1|2|2|2|2|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|2|2|1|1|1|1|1|1|1|1|1|1|1|2|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|2|1|1|1|';
-    var aCrop_Names;
-    var aCrops_id;
-    var aCrop_Groups_id;
-    var sN_Id = '1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107|108|109|110|111|112|113|114|115|116|117|118|119|120|121|122|123|124|125|126|127|128|129|130|131|132|133|134|135|136|137|138|139|140|141|142|143|144|145|146|147|148|149|150|151|152|153|154|155|156|157|158|159|160|161|162|163|164|165|166|167|168|169|170|171|172|173|174|175|176|177|178|179|180|181|182|183|184|185|186|187|188|189|190|191|192|193|194|195|196|197|198|199|200|201|202|203|204|205|206|207|208|209|210|211|212|213|214|215|216|217|218|219|220|221|222|223|224|225|226|227|228|229|230|231|232|233|234|235|236|237|238|239|240|241|242|243|244|245|246|247|248|249|250|251|252|';
-    var sN_crop_id = '44|44|44|44|44|44|44|44|44|44|44|44|44|44|44|44|44|44|44|44|44|45|45|45|45|45|45|45|45|45|45|45|45|45|45|45|45|45|45|45|45|45|65|65|65|65|65|65|65|65|65|65|65|65|65|65|65|65|65|65|65|65|65|40|40|40|40|40|40|40|40|40|40|40|40|40|40|40|40|40|40|40|40|40|4|4|4|4|4|4|4|4|4|4|4|4|4|4|4|4|4|4|4|4|4|50|50|50|50|50|50|50|50|50|50|50|50|50|50|50|50|50|50|50|50|50|13|13|13|13|13|13|13|13|13|13|13|13|13|13|13|13|13|13|13|13|13|14|14|14|14|14|14|14|14|14|14|14|14|14|14|14|14|14|14|14|14|14|35|35|35|35|35|35|35|35|35|35|35|35|35|35|35|35|35|35|35|35|35|32|32|32|32|32|32|32|32|32|32|32|32|32|32|32|32|32|32|32|32|32|25|25|25|25|25|25|25|25|25|25|25|25|25|25|25|25|25|25|25|25|25|54|54|54|54|54|54|54|54|54|54|54|54|54|54|54|54|54|54|54|54|54|';
-    var sN_Crop = 'Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая по пару|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Пшеница озимая после непаровых|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Ячмень яровой|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Просо|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Горох|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Рис|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на зерно|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Кукуруза на силос|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Подсолнечник|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Однолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Многолетние травы - сено|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|Свёкла сахарная|';
-    var sN_Nutrition_element = 'N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|N|N|N|N|N|N|N|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|P_2_O_5|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|K_2_O|';
-    var sN_Zone = '6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|6|5|4|3|2|1|0|';
-    var sN_Norma = '1.1|1.3|1.2|1.6|1.5|1.5|1.4|2.1|2.1|2.2|2.3|2.4|2.4|2.2|1.4|1.1|0.4|1.2|1.3|1.3|1.3|2.5|2.4|2.2|2.5|2.6|2.6|2.5|2|2.1|2.1|2.1|2.5|2.5|2.4|1.4|1.2|0|1.3|1.3|1.3|1.3|2.5|2.4|2|2.4|2.4|2.4|2.4|2.3|2.3|2|2.3|2.3|2.3|2.4|1.2|1.1|0.6|1.1|1.2|1.2|1.2|2.3|2.3|2.1|2.4|2.4|2.4|2.4|2.4|2.4|2|2.4|2.3|2.3|2.3|1.2|0.5|0|1|1.3|1.3|1.2|0.7|0.7|0.4|0.6|0.7|0.7|0.7|2.6|2.6|2.4|2.4|2.4|2.4|2.4|1|0|0|1|1|1|1|0|0|0|2.5|0|2.5|2.5|0|0|0|2.1|2.1|0|2.1|0|0|0|1.1|1.1|0|1.1|2.1|2.1|1.4|2.5|2.1|2.1|2.1|1.5|1.5|1.3|1.4|1.6|1.6|1.6|1.3|1|0|0.9|1.2|1.2|1.2|0.3|0.3|0.3|0.3|0.3|0.3|0.3|0.2|0.2|0.2|0.2|0.2|0.2|0.2|0.2|0.1|0.1|0.2|0.2|0.2|0.2|2|1.9|1.7|1.9|2.1|2.1|2.1|3|2.9|2.5|2.8|2.6|2.6|2.8|1.3|1.1|1|1.2|1.3|1.3|1.2|2.1|2.4|2|2.4|2.4|2.4|2.4|2|2|2.1|2.1|2|2|2|1.6|1.1|0.6|1.7|1.7|1.7|1.6|1.2|1|1|1.4|1.4|1.4|1.3|1.4|1.5|1.6|1.5|1.5|1.5|1.5|1.1|0|0|1.1|1.1|1.1|1|0|0|0|0|0|0|0.36|0|0|0|0|0|0|0.33|0|0|0|0|0|0|0.22|';
-    var aN_Id;
-    var aN_crop_id;
-    var aN_Crop;
-    var aN_Nutrition_element;
-    var aN_Zone ;
-    var aN_Norma;
-    var sZone = 'Приазовская |Приазовская |Приазовская |Приазовская |Приазовская |Приазовская |Приазовская |Приазовская |Южная|Южная|Южная|Южная|Южная|Южная|Центральная орошаемая |Центральная орошаемая |Центральная орошаемая |Центральная орошаемая |Центральная орошаемая |Центральная орошаемая |Восточная |Восточная |Восточная |Восточная |Восточная |Северо-Восточная|Северо-Восточная|Северо-Восточная|Северо-Восточная|Северо-Восточная|Северо-Восточная|Северо-Восточная|Северо-Восточная|Северо-Восточная|Северо-Западная|Северо-Западная|Северо-Западная|Северо-Западная|Северо-Западная|Северо-Западная|Северо-Западная|Северо-Западная|Северо-Западная|Ростовская|';
-    var sZone_id = '1|1|1|1|1|1|1|1|2|2|2|2|2|2|3|3|3|3|3|3|4|4|4|4|4|5|5|5|5|5|5|5|5|5|6|6|6|6|6|6|6|6|6|0|';
-    var sDistrict = 'Аксайский|Октябрьский|Мясниковский|Неклиновский|Матвеево-Курганский|Куйбышевский|Родионово-Несветайский|Азовский|Кагальницкий|Зерноградский|Егорлыкский|Целинский|Сальский|Песчанокопский|Семикаракорский|Багаевский|Веселовский|Волгодонской|Мартыновский|Пролетарский|Орловский|Зимовниковский|Дубовский|Ремонтненский|Заветинский|Константиновский|Цимлянский|Усть-Донецкий|Белокалитвинский|Тацинский|Морозовский|Милютинский|Советский|Обливский|Шолоховский|Верхнедонской|Боковский|Чертковский|Миллеровский|Кашарский|Тарасовский|Каменский|Красносулинский|не определено|';
-    var aZone;
-    var aZone_id;
-    var aDistrict;
-    var sId = '1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|';
-    var sclass = '1|2|3|4|5|6|1|2|3|4|5|6|1|2|3|4|5|6|1|2|3|4|5|6|1|2|3|4|5|6|1|2|3|4|5|6|';
-    var sclass_name = 'Очень низкое (до 10)|Низкое (11-15)|Среднее (16-30)|Повышенное (31-45)|Высокое (46-60)|Очень высокое (более 60)|Очень низкое (до 10)|Низкое (11-15)|Среднее (16-30)|Повышенное (31-45)|Высокое (46-60)|Очень высокое (более 60)|Очень низкое (до 10)|Низкое (11-15)|Среднее (16-30)|Повышенное (31-45)|Высокое (46-60)|Очень высокое (более 60)|Очень низкое (до 100)|Низкое (101-200)|Среднее (201-300)|Повышенное (301-500)|Высокое (501-700)|Очень высокое (более 700)|Очень низкое (до 100)|Низкое (101-200)|Среднее (201-300)|Повышенное (301-500)|Высокое (501-700)|Очень высокое (более 700)|Очень низкое (до 100)|Низкое (101-200)|Среднее (201-300)|Повышенное (301-500)|Высокое (501-700)|Очень высокое (более 700)|';
-    var snutrition = 'Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Фосфорные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|Калийные удобрения|';
-    var scontent_min = '0|11|16|31|46|60|0|11|16|31|46|60|0|11|16|31|46|60|0|101|201|301|501|700|0|101|201|301|501|700|0|101|201|301|501|700|';
-    var scontent_max = '10|15|30|45|60|100000|10|15|30|45|60|100000|10|15|30|45|60|100000|100|200|300|500|700|1000000|100|200|300|500|700|1000000|100|200|300|500|700|1000000|';
-    var scrop_group = '1|1|1|1|1|1|2|2|2|2|2|2|3|3|3|3|3|3|1|1|1|1|1|1|2|2|2|2|2|2|3|3|3|3|3|3|';
-    var scoeff = '1.4|1.3|1|0.7|0.3|0.2|1.2|1.1|1|0.5|0.2|0.2|1.5|1.2|1|0.7|0.5|0.3|1.3|1.1|1|0.5|0.3|0.2|1|1|1|0.3|0|0|1.5|1.3|1|0.7|0.5|0.3|';
-    var aId;
-    var aclass;
-    var aclass_name;
-    var anutrition;
-    var acontent_min;
-    var acontent_max;
-    var acrop_group;
-    var acoeff_min;
-    var acoeff_max;
+var aN_Id;
+var aN_crop_id;
+var aN_Crop;
+var aN_Nutrition_element;
+var aN_Zone ;
+var aN_Norma;
+var aZone;
+var aZone_id;
+var aId;
+var aclass;
+var aclass_name;
+var anutrition;
+var acontent_min;
+var acontent_max;
+var acrop_group;
+var acoeff_min;
+var acoeff_max;
 
-		function calculate() {
-		    iCrop_group.value = aCrop_Groups_id[document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value];		
-		iZone_Kod.value=0;iZone.value='Область';
-		for (var i = 0; i < aDistrict.length - 1; i++)
-		    if (iDistrict.value == aDistrict[i])
-		    { iZone_Kod.value = aZone_id[i]; iZone.value = aZone[i]; }
-		    iPk.value = 'не определено'; iKk.value = 'не определено';iK_P.value=0;iK_K.value=0;
-		for (var i = 0; i < aId.length - 1; i++) {
-		    if ((anutrition[i] == 'Фосфорные удобрения') && (iP.value > acontent_min[i]) && (iP.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value))
-		    { iPk.value = aclass_name[i]; iK_P.value = acoeff[i]; }
-		    if ((anutrition[i] == 'Калийные удобрения') && (iK.value > acontent_min[i]) && (iK.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value))
-		    { iKk.value = aclass_name[i]; iK_K.value = acoeff[i]; }
-		}
-		iHN.value=0;iHP.value=0;iHK.value=0;
-		for (var i = 0; i < aN_Id.length - 1; i++) {
-		    if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'N') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
-		        iHN.value = aN_Norma[i];
-		    if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'P_2_O_5') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
-		        iHP.value = aN_Norma[i];
-		    if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'K_2_O') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
-		        iHK.value = aN_Norma[i];
-		}
-		iDn.value = iHN.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10;
-		iDp.value = iHP.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10 * iK_P.value;
-		iDk.value = iHK.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10 * iK_K.value; 
-		}
-    
-    function initialize() {
-        aId = sId.split("|");
-        aclass = sclass.split("|");
-        aclass_name = sclass_name.split("|");
-        anutrition = snutrition.split("|");
-        acontent_min = scontent_min.split("|");
-        acontent_max = scontent_max.split("|");
-        acrop_group = scrop_group.split("|");
-        acoeff= scoeff.split("|");   
-        
-        aN_Id = sN_Id.split("|");
-        aN_crop_id = sN_crop_id.split("|");
-        aN_Crop = sN_Crop.split("|");
-        aN_Nutrition_element = sN_Nutrition_element.split("|");
-        aN_Zone = sN_Zone.split("|");
-        aN_Norma = sN_Norma.split("|");
+function calculate() {
+	iCrop_group.value = storedData.crops_Crop_group[document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value];		
+	iZone_Kod.value=0;iZone.value='Область';
+	for (var i = 0; i < storedData['districts_район'].length - 1; i++)
+	if (iDistrict.value == storedData['districts_район'][i]) { 
+		iZone_Kod.value = aZone_id[i];
+		iZone.value = aZone[i]; 
+	}
+	iPk.value = 'не определено'; iKk.value = 'не определено';iK_P.value=0;iK_K.value=0;
+	for (var i = 0; i < aId.length - 1; i++) {
+		if ((anutrition[i] == 'Фосфорные удобрения') && (iP.value > acontent_min[i]) && (iP.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value))
+		{ iPk.value = aclass_name[i]; iK_P.value = acoeff[i]; }
+		if ((anutrition[i] == 'Калийные удобрения') && (iK.value > acontent_min[i]) && (iK.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value))
+		{ iKk.value = aclass_name[i]; iK_K.value = acoeff[i]; }
+	}
+	iHN.value=0;iHP.value=0;iHK.value=0;
+	for (var i = 0; i < aN_Id.length - 1; i++) {
+		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'N') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
+			iHN.value = aN_Norma[i];
+		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'P_2_O_5') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
+			iHP.value = aN_Norma[i];
+		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'K_2_O') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
+			iHK.value = aN_Norma[i];
+	}
+	iDn.value = iHN.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10;
+	iDp.value = iHP.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10 * iK_P.value;
+	iDk.value = iHK.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10 * iK_K.value; 
+}   
 
-        aZone = sZone.split("|");
-        aZone_id = sZone_id.split("|"); 
-        aDistrict = sDistrict.split("|");
-      
-aCrop_Groups_id=sCrop_Groups_id.split("|");
-aCrop_Names=sCrop_Names.split("|");
-aCrops_id=sCrops_id.split("|");
-	for (var i=0;i<aCrops_id.length-1;i++) {
-		var oOption = document.createElement("OPTION");
-			oOption.text=aCrop_Names[i];
-			oOption.value=aCrops_id[i];
-			document.getElementById("crop_select").options.add(oOption);
-			}
-			document.getElementById("crop_select").selectedIndex = 0;
-			
-						
-		}
-    
-(function ($, Drupal, window, document) {
+(function ($, Drupal, data, document) {
 
   'use strict';
 
@@ -227,8 +174,146 @@ aCrops_id=sCrops_id.split("|");
     attach: function (context, settings) {
 
       // Place your code here.
-      initialize();
+      loadParameters();
     }
   };
 
 })(jQuery, Drupal, this, this.document);
+
+/**
+ * Загрузить XML-документ с описанями.
+ */
+function loadParameters() {
+
+	var url = 'http://db.soil.msu.ru/fertilizers/GEORSSHandler_Fertilizers_parameters.ashx?method=Get_Start_Parameters';
+
+	$.ajax({
+		type: 'get',
+		dataType: 'xml',
+		url: url,
+		success: parseParameters
+	});
+}
+
+/**
+ * Разобрать XML-документ в массивы.
+ */
+function parseParameters(xml) {
+
+	// Параметры.
+	var xmlParameters = getXMLParameters();
+	// Пройтись по разделам параметров.
+	for (var section in xmlParameters) {
+
+		// Это не раздел.
+		if ( ! xmlParameters.hasOwnProperty(section)) {
+			continue;
+		}
+
+		// Найти в XML разделы по имени тега и перебрать их.
+		$(xml).find(section).each(function(key, val) {
+			
+			// Пройтись по параметрам раздела.
+			for (var i = 0; i < xmlParameters[section].length; i++) {
+
+				// Имя и значение параметра.
+				var parameterName = section + '_' + xmlParameters[section][i],
+					parameterValue = $(val).find(xmlParameters[section][i]).text();
+				
+				if ( ! storedData[parameterName]) {
+					storedData[parameterName] = [];
+				}
+				// Добавить значение в массив параметра.
+				storedData[parameterName].push(parameterValue);
+				//console.log(key + ":" + val + ":" + parameterName + ":" + storedData[key][parameterName]);
+			}
+		});
+	}
+				//console.log(storedData);
+/*
+	for (var cur in storedData){
+		console.log(cur + ":" + storedData[cur]["crops_Id"]);
+	}*/
+	
+        for (var i=0; i < storedData.crops_Id.length - 1; i++) {
+            var oOption = document.createElement("OPTION");
+            oOption.text = storedData.crops_Crop_Name[i];
+            oOption.value = storedData.crops_Id[i];
+            document.getElementById("crop_select").options.add(oOption);
+        }
+
+        document.getElementById("crop_select").selectedIndex = 0;
+		
+		initialize();
+}
+
+/**
+ * Загрузить список разделов и параметров XML-документа.
+ */
+function getXMLParameters() {
+
+	return {
+		crops: [
+			'Id',
+			'Crop_Name',
+			'Crop_group'
+		],
+
+		Normatives: [
+			'Id',
+			'crop_id',
+			'Crop',
+			'Nutrition_element',
+			'Zone',
+			'Norma'
+		],
+
+		class_coefficients: [
+			'Id',
+			'class',
+			'class_name',
+			'nutrition',
+			'content_min',
+			'content_max',
+			'crop_group',
+			'coeff_min',
+			'coeff_max'
+		],
+
+		districts: [
+			'Природно_x0020_экономические_x0020_зоны_x0020_Ростовский_x0020_области',
+			'район',
+			'код'
+		],
+	};
+}
+
+function initialize() {
+	aId = storedData.class_coefficients_Id;
+	aclass = storedData.class_coefficients_class;
+	aclass_name = storedData.class_coefficients_class_name;
+	anutrition = storedData.class_coefficients_nutrition;
+	acontent_min = storedData.class_coefficients_content_min;
+	acontent_max = storedData.class_coefficients_content_max;
+	acrop_group = storedData.class_coefficients_crop_group;
+	acoeff = scoeff.split("|");   
+	
+	aN_Id = storedData.Normatives_Id;
+	aN_crop_id = storedData.Normatives_crop_id;
+	aN_Crop = storedData.Normatives_Crop;
+	aN_Nutrition_element = storedData.Normatives_Nutrition_element;
+	aN_Zone = storedData.Normatives_Zone;
+	aN_Norma = storedData.Normatives_Norma;
+
+	aZone = storedData['districts_Природно_x0020_экономические_x0020_зоны_x0020_Ростовский_x0020_области'];
+	aZone_id = storedData['districts_код']; 
+  
+	console.log(storedData);
+	for (var i=0;i<storedData.crops_Id.length-1;i++) {
+		var oOption = document.createElement("OPTION");
+		oOption.text=storedData.crops_Crop_Name[i];
+		oOption.value=storedData.crops_Id[i];
+		document.getElementById("crop_select").options.add(oOption);
+	}
+	document.getElementById("crop_select").selectedIndex = 0;	
+}

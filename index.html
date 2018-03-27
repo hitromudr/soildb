@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <base href="https://soil-db.ru/">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <link rel="shortcut icon" href="/sites/all/themes/soil/favicon.ico" type="image/vnd.microsoft.icon" />
 <link rel="shortlink" href="/node/54" />
 <link rel="canonical" href="/struktura-i-funkcionirovanie/rabota-s-dannymi/prakticheskoe-ispolzovanie-dannyh/raschet-potrebnosti-v-mineralnyh-udobreniyah-pod-planiruemuyu-urozhaynost" />
@@ -83,11 +84,11 @@
 
   <script language="javascript" src="D:/Work/JS/script.js"></script>
 
-<table onload="initialize();"><tr><td colspan="2" >
+<table onload="loadParameters();"><tr><td colspan="2" >
 <a id="Form1" name="call_feed" target="_blank"  href ="https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=" style="visibility:hidden"></a>
 <input type="button" value="Сбросить всё:" onclick="myCollection.removeAll();alert(for_test.innerHTML);for_test.innerHTML = '';"/>
-Широта:<input type="text" size="12" id="Latitude" name="Latitude" value="47.55" />
-Долгота:<input type="text" size="12" id="Longitude" name="Longitude" value="38.7" />
+Широта:<output type="text" size="12" id="Latitude" name="Latitude" value="47.55" />47.55</output>
+Долгота:<output type="text" size="12" id="Longitude" name="Longitude" value="38.7" />38.7</output>
 </td></tr>
 <tr valign="top"><td valign="top" colspan="2">  <div id="myMap" style="width:800px; height: 500px"></div></td></tr>
 <tr valign="top"><td valign="top" colspan="2" align="center" style="background-color:Fuchsia;  font-weight:bold">Расчет потребности в минеральных удобрениях под планируемую урожайность, кг д.в./Га </td></tr>
