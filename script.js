@@ -6,6 +6,9 @@ var myMap;
 var myCollection;
 var storedData = {};
 	
+/**
+ * Инициализация карты
+**/	
 function init() {
 	var coords = [47.55, 38.7]; 
 	   
@@ -36,6 +39,9 @@ function init() {
 	myCollection = new ymaps.GeoObjectCollection({}, { preset: 'islands#redIcon' });
 }
 
+/**
+ * Создание метки на карте
+**/
 function createPlacemark(coords) {
 	return new ymaps.Placemark(coords, {
 		iconCaption: 'можно тащить'
@@ -45,6 +51,9 @@ function createPlacemark(coords) {
 	});
 }
 
+/**
+ * Загрузка данных поля
+**/
 function load_RSS() {
 	var title;
 	var doc_root;
@@ -131,6 +140,8 @@ function load_RSS() {
 	xhr.send();
 }
    
+   
+// Коеффициент надо пересчитать из XML параметров scoeff_min и scoeff_max
 var scoeff = '1.4|1.3|1|0.7|0.3|0.2|1.2|1.1|1|0.5|0.2|0.2|1.5|1.2|1|0.7|0.5|0.3|1.3|1.1|1|0.5|0.3|0.2|1|1|1|0.3|0|0|1.5|1.3|1|0.7|0.5|0.3|';
 
 var aN_Id;
@@ -151,6 +162,9 @@ var acrop_group;
 var acoeff_min;
 var acoeff_max;
 
+/**
+ * Рассчет удобрений
+**/
 function calculate() {
 	var cropSelect = document.getElementById("crop_select");
 	iCrop_group.value = aCrop_Groups_id[cropSelect.options[cropSelect.selectedIndex].value];		
@@ -203,6 +217,9 @@ function calculate() {
 	iDk.value = iHK.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_K.value; 
 }   
 
+/**
+ * Точка входа
+**/
 (function ($, Drupal, data, document) {
 
   'use strict';
@@ -219,7 +236,7 @@ function calculate() {
 })(jQuery, Drupal, this, this.document);
 
 /**
- * Загрузить XML-документ с описанями.
+ * Загрузка XML-документа с описанями.
  */
 function loadParameters() {
 
@@ -234,7 +251,7 @@ function loadParameters() {
 }
 
 /**
- * Разобрать XML-документ в массивы.
+ * Разбор XML-документа в массивы.
  */
 function parseParameters(xml) {
 
@@ -280,7 +297,7 @@ function parseParameters(xml) {
 }
 
 /**
- * Загрузить список разделов и параметров XML-документа.
+ * Загрузка списка разделов и параметров XML-документа.
  */
 function getXMLParameters() {
 
@@ -320,6 +337,10 @@ function getXMLParameters() {
 	};
 }
 
+
+/**
+ * Инициализация переменных.
+ */
 function initialize() {
 	aId = storedData.class_coefficients_Id;
 	aclass = storedData.class_coefficients_class;
