@@ -53,8 +53,8 @@ function load_RSS() {
 	var soil_node;
 	var sHTML = 'нет объектов в зоне выбора';
 	var t_string;
-	//var url = "https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
-	var url = " http://db.soil.msu.ru/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
+	var url = "https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
+	//var url = " http://db.soil.msu.ru/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
 	var refer = url + Latitude.value + "&longitude=" + Longitude.value; //'test_TM.xml';  //
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', refer); // + '&r=' + Math.random()
@@ -139,7 +139,8 @@ var acoeff_min;
 var acoeff_max;
 
 function calculate() {
-	iCrop_group.value = aCrop_Groups_id[document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value];		
+	var cropSelect = document.getElementById("crop_select");
+	iCrop_group.value = aCrop_Groups_id[cropSelect.options[cropSelect.selectedIndex].value];		
 	iZone_Kod.value=0;
 	iZone.value='Область';
 	for (var i = 0; i < aDistrict.length - 1; i++)
@@ -159,16 +160,18 @@ function calculate() {
 	}
 	iHN.value=0;iHP.value=0;iHK.value=0;
 	for (var i = 0; i < aN_Id.length - 1; i++) {
-		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'N') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
+		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'N') && (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
 			iHN.value = aN_Norma[i];
-		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'P_2_O_5') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
+		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'P_2_O_5') && (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
 			iHP.value = aN_Norma[i];
-		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'K_2_O') && (aN_crop_id[i] == document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value))
+		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'K_2_O') && (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
 			iHK.value = aN_Norma[i];
 	}
-	iDn.value = iHN.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10;
-	iDp.value = iHP.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10 * iK_P.value;
-	iDk.value = iHK.value * parseInt(document.getElementById("Ur").options[document.getElementById("Ur").selectedIndex].value) * 10 * iK_K.value; 
+	
+	var Ur = document.getElementById("Ur");
+	iDn.value = iHN.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10;
+	iDp.value = iHP.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_P.value;
+	iDk.value = iHK.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_K.value; 
 }   
 
 (function ($, Drupal, data, document) {
