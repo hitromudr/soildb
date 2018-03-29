@@ -1,5 +1,6 @@
 
 ymaps.ready(init);
+
 var myPlacemark; 
 var myMap;
 var myCollection;
@@ -9,13 +10,13 @@ function init() {
 	var coords = [47.55, 38.7]; 
 	   
 	myMap = new ymaps.Map('myMap', {
-	center: [47.55, 38.7],
-	  zoom: 12
-	//     ,            behaviors: ['ruler', 'scrollZoom']
+		center: [47.55, 38.7],
+		zoom: 	 12
 	});
 
 	myPlacemark = createPlacemark(coords);
 	myMap.geoObjects.add(myPlacemark);
+	
 	// Слушаем событие окончания перетаскивания на метке.
 	myPlacemark.events.add('dragend', function() {
 		coords = myPlacemark.geometry.getCoordinates();
@@ -30,9 +31,8 @@ function init() {
 	  // Если метка уже создана – просто передвигаем ее.
 	  if (myPlacemark) myPlacemark.geometry.setCoordinates(coords);
 	});
-	//       myMap.behaviors.enable('drag');
+	
 	myMap.setType('yandex#hybrid');
-	//       myMap.controls.add(new ymaps.control.TypeSelector());        
 	myCollection = new ymaps.GeoObjectCollection({}, { preset: 'islands#redIcon' });
 }
 
@@ -53,68 +53,81 @@ function load_RSS() {
 	var soil_node;
 	var sHTML = 'нет объектов в зоне выбора';
 	var t_string;
+	
 	var url = "https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
 	//var url = " http://db.soil.msu.ru/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
-	var refer = url + Latitude.value + "&longitude=" + Longitude.value; //'test_TM.xml';  //
+	var refer = url + Latitude.value + "&longitude=" + Longitude.value;
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', refer); // + '&r=' + Math.random()
-	xhr.setRequestHeader('Content-Type', 'text/xml; charset=utf-8'); //header('Content-Type: text/plain; charset=windows-1251');
+	xhr.open('GET', refer);
+	xhr.setRequestHeader('Content-Type', 'text/xml; charset=utf-8'); 
+	
 	xhr.onload = function (e) {
 		if (xhr.status != 200) {
 			alert('Ошибка ' + xhr.status + ': ' + xhr.statusText);
 		} else {
-			//     if (!(xhr.responseXML.documentElement == null)) {
 			doc_root = xhr.responseXML;
-	 ///// parse and display Description
+			///// parse and display Description
 			if (doc_root.getElementsByTagName('item').length >0) {
 				var doc_item;
 				if (doc_root.getElementsByTagName('Полигоны_агрохимического_обследования').length > 0) {
 					doc_item = doc_root.getElementsByTagName('Полигоны_агрохимического_обследования')[0];
 					t_string = '<table border="1" align="center">';
 					for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++) {
-						t_string = t_string + '<tr><td>' + doc_item.childNodes[0].childNodes[i].nodeName + '</td><td>' +
-						doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
-						if (doc_item.childNodes[0].childNodes[i].nodeName == 'Район') iDistrict.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
-						if (doc_item.childNodes[0].childNodes[i].nodeName == 'Фосфор') iP.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
-						if (doc_item.childNodes[0].childNodes[i].nodeName == 'Калий') iK.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;           
+						t_string = t_string + '<tr><td>' + doc_item.childNodes[0].childNodes[i].nodeName + '</td><td>' 
+								   + doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
+						if (doc_item.childNodes[0].childNodes[i].nodeName == 'Район') 
+							iDistrict.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
+						if (doc_item.childNodes[0].childNodes[i].nodeName == 'Фосфор') 
+							iP.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
+						if (doc_item.childNodes[0].childNodes[i].nodeName == 'Калий') 
+							iK.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;           
 					}
 					t_string = t_string + '</table>';
 					calculate();
 				}
 				document.getElementById('for_test').innerHTML = t_string;
 
-				  //// parse Geography
-				  polygon_node = doc_root.getElementsByTagName('item')[0].childNodes[4].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
+				//// parse Geography
+				polygon_node = doc_root.getElementsByTagName('item')[0].childNodes[4].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
 				if (polygon_node.xml) {
-					t_string = polygon_node.nodeValue //.xml             // Converts the xml object to string  (  For IE)
+					// Converts the xml object to string  (  For IE)
+					t_string = polygon_node.nodeValue;          
 				} else {
-					t_string = new XMLSerializer().serializeToString(polygon_node);      // Converts the xml object to string (For rest browsers, mozilla, etc)
+					// Converts the xml object to string (For rest browsers, mozilla, etc)
+					t_string = new XMLSerializer().serializeToString(polygon_node);
 				}
+				
 				var arr_a = t_string.split('>')[1];
 				var arr_c = arr_a.split('<')[0];
 				arr_a = arr_c.split(' ');
 				var t;
 				var arr_b = [['1', '2'], ['3', '4']];
+				
 				for (var i = 0; i < arr_a.length / 2; i++) {
 					t = arr_a[i * 2] + ',' + arr_a[i * 2 + 1];
 					arr_b[i] = t.split(',');
 				}
-				var myPolygon1 = new ymaps.GeoObject({ geometry: { type: "Polygon", coordinates: [arr_b] },
-					properties: { hintContent: "Многоугольник" }
-				},
-				{ interactivityModel: 'default#transparent', fillColor: '#7df9ff33', opacity: 0.5, strokeColor: '#FF0000',
-				  // Прозрачность обводки.
-				  strokeOpacity: 0.5, strokeWidth: 2
-				});
+				
+				var myPolygon1 = new ymaps.GeoObject({ 
+					geometry: { 
+						type: "Polygon", 
+						coordinates: [arr_b] },
+						properties: { hintContent: "Многоугольник" }
+					},
+					{ 
+						interactivityModel: 'default#transparent', 
+						fillColor: '#7df9ff33', 
+						opacity: 0.5, 
+						strokeColor: '#FF0000',
+						strokeOpacity: 0.5, strokeWidth: 2
+					});
+				
 				myCollection.add(myPolygon1);
 				myMap.geoObjects.add(myCollection);
-				/// end Geography
-			} //// end Description
-				  
-				///  else document.getElementById('details').src = refer;        
-
-		} // doc xhr
+			}
+		}
 	};
+	
 	xhr.send();
 }
    
@@ -143,29 +156,45 @@ function calculate() {
 	iCrop_group.value = aCrop_Groups_id[cropSelect.options[cropSelect.selectedIndex].value];		
 	iZone_Kod.value=0;
 	iZone.value='Область';
+	
 	for (var i = 0; i < aDistrict.length - 1; i++)
-	if (iDistrict.value == aDistrict[i]) { 
-		iZone_Kod.value = aZone_id[i];
-		iZone.value = aZone[i]; 
-	}
+		if (iDistrict.value == aDistrict[i]) { 
+			iZone_Kod.value = aZone_id[i];
+			iZone.value = aZone[i]; 
+		}
+		
 	iPk.value = 'не определено'; 
 	iKk.value = 'не определено';
 	iK_P.value=0;
 	iK_K.value=0;
+	
 	for (var i = 0; i < aId.length - 1; i++) {
-		if ((anutrition[i] == 'Фосфорные удобрения') && (iP.value > acontent_min[i]) && (iP.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value))
-		{ iPk.value = aclass_name[i]; iK_P.value = acoeff[i]; }
-		if ((anutrition[i] == 'Калийные удобрения') && (iK.value > acontent_min[i]) && (iK.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value))
-		{ iKk.value = aclass_name[i]; iK_K.value = acoeff[i]; }
-	}
-	iHN.value=0;iHP.value=0;iHK.value=0;
+		if ((anutrition[i] == 'Фосфорные удобрения') && (iP.value > acontent_min[i]) && (iP.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value)) {
+			iPk.value = aclass_name[i];
+			iK_P.value = acoeff[i];
+		}
+		if ((anutrition[i] == 'Калийные удобрения') && (iK.value > acontent_min[i]) && (iK.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value)) {
+			iKk.value = aclass_name[i]; 
+			iK_K.value = acoeff[i]; }
+		}
+		
+	iHN.value=0;
+	iHP.value=0;
+	iHK.value=0;
+	
 	for (var i = 0; i < aN_Id.length - 1; i++) {
-		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'N') && (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
-			iHN.value = aN_Norma[i];
-		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'P_2_O_5') && (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
-			iHP.value = aN_Norma[i];
-		if ((iZone_Kod.value == aN_Zone[i]) && (aN_Nutrition_element[i] == 'K_2_O') && (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
-			iHK.value = aN_Norma[i];
+		if ((iZone_Kod.value == aN_Zone[i]) 
+			&& (aN_Nutrition_element[i] == 'N')
+			&& (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
+				iHN.value = aN_Norma[i];
+		if ((iZone_Kod.value == aN_Zone[i]) 
+			&& (aN_Nutrition_element[i] == 'P_2_O_5')
+			&& (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
+				iHP.value = aN_Norma[i];
+		if ((iZone_Kod.value == aN_Zone[i])
+			&& (aN_Nutrition_element[i] == 'K_2_O')
+			&& (aN_crop_id[i] == cropSelect.options[cropSelect.selectedIndex].value))
+				iHK.value = aN_Norma[i];
 	}
 	
 	var Ur = document.getElementById("Ur");
@@ -237,7 +266,7 @@ function parseParameters(xml) {
 			}
 		});
 	}
-	
+	//Создание выпадающего списка "Культура"
 	for (var i=0; i < storedData.crops_Id.length - 1; i++) {
 		var oOption = document.createElement("OPTION");
 		oOption.text = storedData.crops_Crop_Name[i];
@@ -315,8 +344,9 @@ function initialize() {
 	aCrop_Groups_id=storedData.crops_Crop_group;
 	aCrop_Names=storedData.crops_Crop_Name;
 	aCrops_id=storedData.crops_Id;  
-	
+	// дебаг объекта
 	console.log(storedData);
+	// Наполнение выпадающего списка "Культура"
 	for (var i=0;i<aCrops_id.length-1;i++) {
 		var oOption = document.createElement("OPTION");
 		oOption.text=aCrop_Names[i];
