@@ -139,14 +139,18 @@ var acoeff_min;
 var acoeff_max;
 
 function calculate() {
-	iCrop_group.value = storedData.crops_Crop_group[document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value];		
-	iZone_Kod.value=0;iZone.value='Область';
-	for (var i = 0; i < storedData['districts_район'].length - 1; i++)
-	if (iDistrict.value == storedData['districts_район'][i]) { 
+	iCrop_group.value = aCrop_Groups_id[document.getElementById("crop_select").options[document.getElementById("crop_select").selectedIndex].value];		
+	iZone_Kod.value=0;
+	iZone.value='Область';
+	for (var i = 0; i < aDistrict.length - 1; i++)
+	if (iDistrict.value == aDistrict[i]) { 
 		iZone_Kod.value = aZone_id[i];
 		iZone.value = aZone[i]; 
 	}
-	iPk.value = 'не определено'; iKk.value = 'не определено';iK_P.value=0;iK_K.value=0;
+	iPk.value = 'не определено'; 
+	iKk.value = 'не определено';
+	iK_P.value=0;
+	iK_K.value=0;
 	for (var i = 0; i < aId.length - 1; i++) {
 		if ((anutrition[i] == 'Фосфорные удобрения') && (iP.value > acontent_min[i]) && (iP.value <= acontent_max[i]) && (acrop_group[i] == iCrop_group.value))
 		{ iPk.value = aclass_name[i]; iK_P.value = acoeff[i]; }
@@ -227,26 +231,20 @@ function parseParameters(xml) {
 				}
 				// Добавить значение в массив параметра.
 				storedData[parameterName].push(parameterValue);
-				//console.log(key + ":" + val + ":" + parameterName + ":" + storedData[key][parameterName]);
 			}
 		});
 	}
-				//console.log(storedData);
-/*
-	for (var cur in storedData){
-		console.log(cur + ":" + storedData[cur]["crops_Id"]);
-	}*/
 	
-        for (var i=0; i < storedData.crops_Id.length - 1; i++) {
-            var oOption = document.createElement("OPTION");
-            oOption.text = storedData.crops_Crop_Name[i];
-            oOption.value = storedData.crops_Id[i];
-            document.getElementById("crop_select").options.add(oOption);
-        }
+	for (var i=0; i < storedData.crops_Id.length - 1; i++) {
+		var oOption = document.createElement("OPTION");
+		oOption.text = storedData.crops_Crop_Name[i];
+		oOption.value = storedData.crops_Id[i];
+		document.getElementById("crop_select").options.add(oOption);
+	}
 
-        document.getElementById("crop_select").selectedIndex = 0;
-		
-		initialize();
+	document.getElementById("crop_select").selectedIndex = 0;
+	
+	initialize();
 }
 
 /**
@@ -309,12 +307,17 @@ function initialize() {
 
 	aZone = storedData['districts_Природно_x0020_экономические_x0020_зоны_x0020_Ростовский_x0020_области'];
 	aZone_id = storedData['districts_код']; 
-  
+    aDistrict = storedData['districts_район'];
+      
+	aCrop_Groups_id=storedData.crops_Crop_group;
+	aCrop_Names=storedData.crops_Crop_Name;
+	aCrops_id=storedData.crops_Id;  
+	
 	console.log(storedData);
-	for (var i=0;i<storedData.crops_Id.length-1;i++) {
+	for (var i=0;i<aCrops_id.length-1;i++) {
 		var oOption = document.createElement("OPTION");
-		oOption.text=storedData.crops_Crop_Name[i];
-		oOption.value=storedData.crops_Id[i];
+		oOption.text=aCrop_Names[i];
+		oOption.value=aCrops_id[i];
 		document.getElementById("crop_select").options.add(oOption);
 	}
 	document.getElementById("crop_select").selectedIndex = 0;	
