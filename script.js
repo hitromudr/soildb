@@ -7,7 +7,7 @@ var myCollection;
 var storedData = {};
 	
 /**
- * Инициализация карты
+ * Инициализация карты.
 **/	
 function init() {
 	var coords = [47.55, 38.7]; 
@@ -40,7 +40,7 @@ function init() {
 }
 
 /**
- * Создание метки на карте
+ * Создание метки на карте.
 **/
 function createPlacemark(coords) {
 	return new ymaps.Placemark(coords, {
@@ -52,7 +52,7 @@ function createPlacemark(coords) {
 }
 
 /**
- * Загрузка данных поля
+ * Загрузка данных поля.
 **/
 function load_RSS() {
 	var title;
@@ -163,7 +163,7 @@ var acoeff_min;
 var acoeff_max;
 
 /**
- * Рассчет удобрений
+ * Рассчет удобрений.
 **/
 function calculate() {
 	var cropSelect = document.getElementById("crop_select");
@@ -218,7 +218,7 @@ function calculate() {
 }   
 
 /**
- * Точка входа
+ * Точка входа.
 **/
 (function ($, Drupal, data, document) {
 
