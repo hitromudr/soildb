@@ -84,27 +84,27 @@
 
   <script type="text/javascript" src="file:///D:/Work/JS/script.js"></script>
 
-<table onload="loadParameters();"><tr><td colspan="2" >
+<table onload="page.loadParameters();"><tr><td colspan="2" >
 <a id="Form1" name="call_feed" target="_blank"  href ="https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=" style="visibility:hidden"></a>
 <input type="button" value="Сбросить всё:" onclick="myCollection.removeAll();for_test.innerHTML = '';"/>
-Широта:<output type="text" size="12" id="Latitude" name="Latitude" value="47.55" />47.55</output>
-Долгота:<output type="text" size="12" id="Longitude" name="Longitude" value="38.7" />38.7</output>
+Широта:<input type="text" size="12" id="Latitude" name="Latitude" disabled="disabled" value="47.55" />47.55</output>
+Долгота:<input type="text" size="12" id="Longitude" name="Longitude" disabled="disabled" value="38.7" />38.7</output>
 </td></tr>
 <tr valign="top"><td valign="top" colspan="2">  <div id="myMap" style="width:800px; height: 500px"></div></td></tr>
 <tr valign="top"><td valign="top" colspan="2" align="center" style="background-color:Fuchsia;  font-weight:bold">Расчет потребности в минеральных удобрениях под планируемую урожайность, кг д.в./Га </td></tr>
 <tr  valign="top" ><td valign="top" align="center" style="background-color:Silver"> 
-<input type="button" style="cursor:pointer" value="Получить данные для поля" onclick="load_RSS();"/>
+<input type="button" style="cursor:pointer" value="Получить данные для поля" onclick="page.load_RSS();"/>
 <div id="for_test" style="width:300px;"></div>
 </td>
 <td><table border="1"><tr>
 <td align="center">Урожайность:<br />
-<select id="Ur" size="1" onchange="calculate();"><option  value="0" selected="selected">не задано</option>
+<select id="Ur" size="1" onchange="page.calculate();"><option  value="0" selected="selected">не задано</option>
 <option  value="1">10 ц/Га</option><option  value="2">20 ц/Га</option><option  value="3">30 ц/Га</option>
 <option  value="4">40 ц/Га</option><option  value="5">50 ц/Га</option><option  value="6">60 ц/Га</option>
 <option  value="7">70 ц/Га</option><option  value="8">80 ц/Га</option><option  value="9">90 ц/Га</option>
 </select>
 </td>
-<td align="center">Культура:<br /><select id="crop_select" size="1" onchange="calculate();"></select></td>
+<td align="center">Культура:<br /><select id="crop_select" size="1" onchange="page.calculate();"></select></td>
 </tr>
 <tr><td>Норма внесения,Азот:</td><td><input type= "text" id="iDn" name="iDn" disabled="disabled" value="0" size="28" /></td></tr>
 <tr><td>Норма внесения,Фосфор:</td><td><input type= "text" id="iDp" name="iDp" disabled="disabled" value="0" size="28" /></td></tr>
