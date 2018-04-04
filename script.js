@@ -13,6 +13,7 @@ var page = new Page();
 function Page () {
     
     self = this;
+    $.ajaxSetup({ cache: true });
 
     this.storedData = {};
     
@@ -24,6 +25,8 @@ function Page () {
      * Загрузка данных поля.
     **/
     this.load_RSS = function () {
+        var time = performance.now();
+
         var title;
         var doc_root;
         var doc_channel;
@@ -36,12 +39,17 @@ function Page () {
         var url = " http://db.soil.msu.ru/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
         var refer = url + Latitude.value + "&longitude=" + Longitude.value;
         self.loadParameters(refer, parseRSSParameters);
+
+        time = performance.now() - time;
+        console.log('load_RSS: ', time);
     }
 
     /**
      * Разобрать данные RSS.
      **/
     function parseRSSParameters(xml) {
+        var time = performance.now();
+
         ///// parse and display Description
         if ($(xml).find('item').length > 0) {
             var doc_item;
@@ -52,12 +60,16 @@ function Page () {
             document.getElementById('for_test').innerHTML = t_string;
             parseGeography(xml);
         }
+
+        time = performance.now() - time;
+        console.log('parseRSSParameters: ', time);
     }
 
     /**
      * Создать таблицу ответа из данных RSS.
      **/
     function createTable(xml) {
+        var time = performance.now();
         doc_item = $(xml).find('Полигоны_агрохимического_обследования')[0];
         t_string = '<table border="1" align="center">';
         for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++)
@@ -69,12 +81,16 @@ function Page () {
         iK.value = $(xml).find('item').find('Калий').text();
 
         t_string = t_string + '</table>';
+
+        time = performance.now() - time;
+        console.log('createTable: ', time);
     }
 
     /**
      * parse Geography
     **/
     function parseGeography(xml) {
+        var time = performance.now();
         polygon_node = $(xml).find('item')[0].childNodes[4].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
         if (polygon_node.xml) {
             // Converts the xml object to string  (  For IE)
@@ -112,12 +128,16 @@ function Page () {
 
         myCollection.add(myPolygon1);
         myMap.geoObjects.add(myCollection);
+
+        time = performance.now() - time;
+        console.log('parseGeography: ', time);
     }
 
     /**
      * Рассчет удобрений.
     **/
     this.calculate = function () {
+        var time = performance.now();
         var cropSelect = document.getElementById("crop_select");
         iCrop_group.value = self.aCrop_Groups_id[cropSelect.options[cropSelect.selectedIndex].value];
         iZone_Kod.value=0;
@@ -174,12 +194,16 @@ function Page () {
         iDn.value = (iHN.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10).toFixed(2);
         iDp.value = (iHP.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_P.value).toFixed(2);
         iDk.value = (iHK.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_K.value).toFixed(2);
+
+        time = performance.now() - time;
+        console.log('calculate: ', time);
     }
 
     /**
      * Загрузка XML-документа с описанями.
     **/
     this.loadParameters = function (url, onSuccess) {
+        var time = performance.now();
         var url = url || 'http://db.soil.msu.ru/fertilizers/GEORSSHandler_Fertilizers_parameters.ashx?method=Get_Start_Parameters';
 
         $.ajax({
@@ -188,13 +212,16 @@ function Page () {
             url: url,
             success: onSuccess || parseParameters
         });
+
+        time = performance.now() - time;
+        console.log('loadParameters: ', time);
     }
 
     /**
      * Разбор XML-документа в массивы.
      */
     function parseParameters (xml) {
-
+        var time = performance.now();
         // Параметры.
         var xmlParameters = getXMLParameters();
         // Пройтись по разделам параметров.
@@ -225,45 +252,53 @@ function Page () {
         }
 
         initialize();
+
+        time = performance.now() - time;
+        console.log('parseParameters: ', time);
     }
 
     /**
      * Инициализация переменных.
      **/
     function initialize () {
-      self.aId = self.storedData.class_coefficients_Id;
-      self.aclass = self.storedData.class_coefficients_class;
-      self.aclass_name = self.storedData.class_coefficients_class_name;
-      self.anutrition = self.storedData.class_coefficients_nutrition;
-      self.acontent_min = self.storedData.class_coefficients_content_min;
-      self.acontent_max = self.storedData.class_coefficients_content_max;
-      self.acrop_group = self.storedData.class_coefficients_crop_group;
-      self.acoeff = self.scoeff.split("|");
+        var time = performance.now();
+        self.aId = self.storedData.class_coefficients_Id;
+        self.aclass = self.storedData.class_coefficients_class;
+        self.aclass_name = self.storedData.class_coefficients_class_name;
+        self.anutrition = self.storedData.class_coefficients_nutrition;
+        self.acontent_min = self.storedData.class_coefficients_content_min;
+        self.acontent_max = self.storedData.class_coefficients_content_max;
+        self.acrop_group = self.storedData.class_coefficients_crop_group;
+        self.acoeff = self.scoeff.split("|");
 
-      self.aN_Id = self.storedData.Normatives_Id;
-      self.aN_crop_id = self.storedData.Normatives_crop_id;
-      self.aN_Crop = self.storedData.Normatives_Crop;
-      self.aN_Nutrition_element = self.storedData.Normatives_Nutrition_element;
-      self.aN_Zone = self.storedData.Normatives_Zone;
-      self.aN_Norma = self.storedData.Normatives_Norma;
+        self.aN_Id = self.storedData.Normatives_Id;
+        self.aN_crop_id = self.storedData.Normatives_crop_id;
+        self.aN_Crop = self.storedData.Normatives_Crop;
+        self.aN_Nutrition_element = self.storedData.Normatives_Nutrition_element;
+        self.aN_Zone = self.storedData.Normatives_Zone;
+        self.aN_Norma = self.storedData.Normatives_Norma;
 
-      self.aZone = self.storedData['districts_Природно_x0020_экономические_x0020_зоны_x0020_Ростовский_x0020_области'];
-      self.aZone_id = self.storedData['districts_код'];
-      self.aDistrict = self.storedData['districts_район'];
+        self.aZone = self.storedData['districts_Природно_x0020_экономические_x0020_зоны_x0020_Ростовский_x0020_области'];
+        self.aZone_id = self.storedData['districts_код'];
+        self.aDistrict = self.storedData['districts_район'];
 
-      self.aCrop_Groups_id = self.storedData.crops_Crop_group;
-      self.aCrop_Names = self.storedData.crops_Crop_Name;
-      self.aCrops_id = self.storedData.crops_Id;
+        self.aCrop_Groups_id = self.storedData.crops_Crop_group;
+        self.aCrop_Names = self.storedData.crops_Crop_Name;
+        self.aCrops_id = self.storedData.crops_Id;
         // дебаг объекта
         console.log(self.storedData);
 
         fillComboBox("crop_select");
+
+        time = performance.now() - time;
+        console.log('initialize: ', time);
     }
 
     /**
      * Наполнение выпадающего списка "Культура"
      **/
     function fillComboBox(comboBoxName) {
+        var time = performance.now();
         for (var i = 0; i < self.aCrops_id.length - 1; i++) {
             var oOption = document.createElement("OPTION");
             oOption.text = self.aCrop_Names[i];
@@ -271,13 +306,15 @@ function Page () {
             document.getElementById(comboBoxName).options.add(oOption);
         }
         document.getElementById(comboBoxName).selectedIndex = 0;
+
+        time = performance.now() - time;
+        console.log('fillComboBox: ', time);
     }
 
     /**
      * Загрузка списка разделов и параметров XML-документа.
      */
     function getXMLParameters() {
-
         return {
             crops: [
                 'Id',
@@ -319,6 +356,7 @@ function Page () {
  * Инициализация карты.
 **/
 function init() {
+    var time = performance.now();
 	var coords = [47.55, 38.7];
 
     myMap = new ymaps.Map('myMap', {
@@ -346,6 +384,9 @@ function init() {
 
 	myMap.setType('yandex#hybrid');
 	myCollection = new ymaps.GeoObjectCollection({}, { preset: 'islands#redIcon' });
+
+    time = performance.now() - time;
+    console.log('init: ', time);
 }
 
 /**
