@@ -35,78 +35,83 @@ function Page () {
         //var url = "https://gis.soil.msu.ru/soil_db/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
         var url = " http://db.soil.msu.ru/fertilizers/GEORSSHandler_Field.ashx?Latitude=";
         var refer = url + Latitude.value + "&longitude=" + Longitude.value;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', refer);
-        xhr.setRequestHeader('Content-Type', 'text/xml; charset=utf-8');
-        xhr.onload = onPageLoad.bind(this, xhr);
-        xhr.send();
+        self.loadParameters(refer, parseRSSParameters);
     }
 
-    function onPageLoad(xhr) {
-        if (xhr.status != 200) {
-            alert('Ошибка ' + xhr.status + ': ' + xhr.statusText);
-        } else {
-            doc_root = xhr.responseXML;
-            ///// parse and display Description
-            if (doc_root.getElementsByTagName('item').length > 0) {
-                var doc_item;
-                if (doc_root.getElementsByTagName('Полигоны_агрохимического_обследования').length > 0) {
-                    doc_item = doc_root.getElementsByTagName('Полигоны_агрохимического_обследования')[0];
-                    t_string = '<table border="1" align="center">';
-                    for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++) {
-                        t_string = t_string + '<tr><td>' + doc_item.childNodes[0].childNodes[i].nodeName + '</td><td>'
-                            + doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
-                        if (doc_item.childNodes[0].childNodes[i].nodeName == 'Район')
-                            iDistrict.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
-                        if (doc_item.childNodes[0].childNodes[i].nodeName == 'Фосфор')
-                            iP.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
-                        if (doc_item.childNodes[0].childNodes[i].nodeName == 'Калий')
-                            iK.value = doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue;
-                    }
-                    t_string = t_string + '</table>';
-                    self.calculate();
-                }
-                document.getElementById('for_test').innerHTML = t_string;
-
-                //// parse Geography
-                polygon_node = doc_root.getElementsByTagName('item')[0].childNodes[4].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
-                if (polygon_node.xml) {
-                    // Converts the xml object to string  (  For IE)
-                    t_string = polygon_node.nodeValue;
-                } else {
-                    // Converts the xml object to string (For rest browsers, mozilla, etc)
-                    t_string = new XMLSerializer().serializeToString(polygon_node);
-                }
-
-                var arr_a = t_string.split('>')[1];
-                var arr_c = arr_a.split('<')[0];
-                arr_a = arr_c.split(' ');
-                var t;
-                var arr_b = [['1', '2'], ['3', '4']];
-
-                for (var i = 0; i < arr_a.length / 2; i++) {
-                    t = arr_a[i * 2] + ',' + arr_a[i * 2 + 1];
-                    arr_b[i] = t.split(',');
-                }
-
-                var myPolygon1 = new ymaps.GeoObject({
-                        geometry: {
-                            type: "Polygon",
-                            coordinates: [arr_b] },
-                        properties: { hintContent: "Многоугольник" }
-                    },
-                    {
-                        interactivityModel: 'default#transparent',
-                        fillColor: '#7df9ff33',
-                        opacity: 0.5,
-                        strokeColor: '#FF0000',
-                        strokeOpacity: 0.5, strokeWidth: 2
-                    });
-
-                myCollection.add(myPolygon1);
-                myMap.geoObjects.add(myCollection);
+    /**
+     * Разобрать данные RSS.
+     **/
+    function parseRSSParameters(xml) {
+        ///// parse and display Description
+        if ($(xml).find('item').length > 0) {
+            var doc_item;
+            if ($(xml).find('Полигоны_агрохимического_обследования').length > 0) {
+                createTable(xml);
+                self.calculate();
             }
+            document.getElementById('for_test').innerHTML = t_string;
+            parseGeography(xml);
         }
+    }
+
+    /**
+     * Создать таблицу ответа из данных RSS.
+     **/
+    function createTable(xml) {
+        doc_item = $(xml).find('Полигоны_агрохимического_обследования')[0];
+        t_string = '<table border="1" align="center">';
+        for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++) {
+            t_string = t_string + '<tr><td>' + doc_item.childNodes[0].childNodes[i].nodeName + '</td><td>'
+                + doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
+
+            iDistrict.value = $(xml).find('item').find('Район').text();
+            iP.value = $(xml).find('item').find('Фосфор').text();
+            iK.value = $(xml).find('item').find('Калий').text();
+        }
+        t_string = t_string + '</table>';
+    }
+
+    /**
+     * parse Geography
+    **/
+    function parseGeography(xml) {
+        polygon_node = $(xml).find('item')[0].childNodes[4].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
+        if (polygon_node.xml) {
+            // Converts the xml object to string  (  For IE)
+            t_string = polygon_node.nodeValue;
+        } else {
+            // Converts the xml object to string (For rest browsers, mozilla, etc)
+            t_string = new XMLSerializer().serializeToString(polygon_node);
+        }
+
+        var arr_a = t_string.split('>')[1];
+        var arr_c = arr_a.split('<')[0];
+        arr_a = arr_c.split(' ');
+        var t;
+        var arr_b = [['1', '2'], ['3', '4']];
+
+        for (var i = 0; i < arr_a.length / 2; i++) {
+            t = arr_a[i * 2] + ',' + arr_a[i * 2 + 1];
+            arr_b[i] = t.split(',');
+        }
+
+        var myPolygon1 = new ymaps.GeoObject({
+                geometry: {
+                    type: "Polygon",
+                    coordinates: [arr_b]
+                },
+                properties: {hintContent: "Многоугольник"}
+            },
+            {
+                interactivityModel: 'default#transparent',
+                fillColor: '#7df9ff33',
+                opacity: 0.5,
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.5, strokeWidth: 2
+            });
+
+        myCollection.add(myPolygon1);
+        myMap.geoObjects.add(myCollection);
     }
 
     /**
@@ -174,14 +179,14 @@ function Page () {
     /**
      * Загрузка XML-документа с описанями.
     **/
-    this.loadParameters = function () {
-        var url = 'http://db.soil.msu.ru/fertilizers/GEORSSHandler_Fertilizers_parameters.ashx?method=Get_Start_Parameters';
+    this.loadParameters = function (url, onSuccess) {
+        var url = url || 'http://db.soil.msu.ru/fertilizers/GEORSSHandler_Fertilizers_parameters.ashx?method=Get_Start_Parameters';
 
         $.ajax({
             type: 'get',
             dataType: 'xml',
             url: url,
-            success: parseParameters
+            success: onSuccess || parseParameters
         });
     }
 
@@ -258,7 +263,7 @@ function Page () {
     /**
      * Наполнение выпадающего списка "Культура"
      **/
-    function fillComboBox(/*name*/ comboBoxName) {
+    function fillComboBox(comboBoxName) {
         for (var i = 0; i < self.aCrops_id.length - 1; i++) {
             var oOption = document.createElement("OPTION");
             oOption.text = self.aCrop_Names[i];
