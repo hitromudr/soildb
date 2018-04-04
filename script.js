@@ -60,14 +60,14 @@ function Page () {
     function createTable(xml) {
         doc_item = $(xml).find('Полигоны_агрохимического_обследования')[0];
         t_string = '<table border="1" align="center">';
-        for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++) {
+        for (var i = 0; i < doc_item.childNodes[0].childNodes.length; i++)
             t_string = t_string + '<tr><td>' + doc_item.childNodes[0].childNodes[i].nodeName + '</td><td>'
-                + doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
+                     + doc_item.childNodes[0].childNodes[i].childNodes[0].nodeValue + '</td></tr>';
 
-            iDistrict.value = $(xml).find('item').find('Район').text();
-            iP.value = $(xml).find('item').find('Фосфор').text();
-            iK.value = $(xml).find('item').find('Калий').text();
-        }
+        iDistrict.value = $(xml).find('item').find('Район').text();
+        iP.value = $(xml).find('item').find('Фосфор').text();
+        iK.value = $(xml).find('item').find('Калий').text();
+
         t_string = t_string + '</table>';
     }
 
