@@ -1,4 +1,6 @@
 
+DEBUG = true;
+
 ymaps.ready(init);
 
 var myPlacemark,
@@ -26,7 +28,6 @@ function Page () {
     **/
     this.load_RSS = function () {
         var time = performance.now();
-
         var title;
         var doc_root;
         var doc_channel;
@@ -40,8 +41,7 @@ function Page () {
         var refer = url + Latitude.value + "&longitude=" + Longitude.value;
         self.loadParameters(refer, parseRSSParameters);
 
-        time = performance.now() - time;
-        console.log('load_RSS: ', time);
+        debugLog('load_RSS: ', time, performance.now() - time);
     }
 
     /**
@@ -61,8 +61,7 @@ function Page () {
             parseGeography(xml);
         }
 
-        time = performance.now() - time;
-        console.log('parseRSSParameters: ', time);
+        debugLog('parseRSSParameters: ', time, performance.now() - time);
     }
 
     /**
@@ -82,8 +81,7 @@ function Page () {
 
         t_string = t_string + '</table>';
 
-        time = performance.now() - time;
-        console.log('createTable: ', time);
+        debugLog('createTable: ', time, performance.now() - time);
     }
 
     /**
@@ -129,8 +127,7 @@ function Page () {
         myCollection.add(myPolygon1);
         myMap.geoObjects.add(myCollection);
 
-        time = performance.now() - time;
-        console.log('parseGeography: ', time);
+        debugLog('parseGeography: ', time, performance.now() - time);
     }
 
     /**
@@ -195,8 +192,7 @@ function Page () {
         iDp.value = (iHP.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_P.value).toFixed(2);
         iDk.value = (iHK.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_K.value).toFixed(2);
 
-        time = performance.now() - time;
-        console.log('calculate: ', time);
+        debugLog('calculate: ', time, performance.now() - time);
     }
 
     /**
@@ -213,8 +209,7 @@ function Page () {
             success: onSuccess || parseParameters
         });
 
-        time = performance.now() - time;
-        console.log('loadParameters: ', time);
+        debugLog('loadParameters: ', time, performance.now() - time);
     }
 
     /**
@@ -253,8 +248,7 @@ function Page () {
 
         initialize();
 
-        time = performance.now() - time;
-        console.log('parseParameters: ', time);
+        debugLog('parseParameters: ', time, performance.now() - time);
     }
 
     /**
@@ -286,12 +280,11 @@ function Page () {
         self.aCrop_Names = self.storedData.crops_Crop_Name;
         self.aCrops_id = self.storedData.crops_Id;
         // дебаг объекта
-        console.log(self.storedData);
+        debugLog(self.storedData);
 
         fillComboBox("crop_select");
 
-        time = performance.now() - time;
-        console.log('initialize: ', time);
+        debugLog('initialize: ', time, performance.now() - time);
     }
 
     /**
@@ -307,8 +300,7 @@ function Page () {
         }
         document.getElementById(comboBoxName).selectedIndex = 0;
 
-        time = performance.now() - time;
-        console.log('fillComboBox: ', time);
+        debugLog('fillComboBox: ', time, performance.now() - time);
     }
 
     /**
@@ -385,8 +377,7 @@ function init() {
 	myMap.setType('yandex#hybrid');
 	myCollection = new ymaps.GeoObjectCollection({}, { preset: 'islands#redIcon' });
 
-    time = performance.now() - time;
-    console.log('init: ', time);
+    debugLog('init: ', time, performance.now() - time);
 }
 
 /**
@@ -419,6 +410,9 @@ function createPlacemark(coords) {
 
 })(jQuery, Drupal, this, this.document);
 
+function debugLog(msg, msg1, msg2){
+    if (DEBUG) console.log(msg, msg1, msg2);
+}
 
 
 
