@@ -15,7 +15,6 @@ var page = new Page();
 function Page () {
     
     self = this;
-    $.ajaxSetup({ cache: true });
 
     this.storedData = {};
     
@@ -52,7 +51,7 @@ function Page () {
                 createTable(xml);
                 self.calculate();
             }
-            document.getElementById('for_test').innerHTML = t_string;
+            $("#for_test")[0].innerHTML = t_string;
             parseGeography(xml);
         }
     }
@@ -121,7 +120,7 @@ function Page () {
      * Рассчет удобрений.
     **/
     this.calculate = function () {
-        var cropSelect = document.getElementById("crop_select");
+        var cropSelect = $("#crop_select")[0];
         iCrop_group.value = self.aCrop_Groups_id[cropSelect.options[cropSelect.selectedIndex].value];
         iZone_Kod.value=0;
         iZone.value='Область';
@@ -173,7 +172,7 @@ function Page () {
                     iHK.value = parseFloat(self.aN_Norma[i]).toFixed(2);
         }
 
-        var Ur = document.getElementById("Ur");
+        var Ur = $("#Ur")[0];
         iDn.value = (iHN.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10).toFixed(2);
         iDp.value = (iHP.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_P.value).toFixed(2);
         iDk.value = (iHK.value * parseInt(Ur.options[Ur.selectedIndex].value) * 10 * iK_K.value).toFixed(2);
@@ -266,13 +265,14 @@ function Page () {
      * Наполнение выпадающего списка "Культура"
      **/
     function fillComboBox(comboBoxName) {
+        var comboBoxName = "#" + comboBoxName;
         for (var i = 0; i < self.aCrops_id.length - 1; i++) {
             var oOption = document.createElement("OPTION");
             oOption.text = self.aCrop_Names[i];
             oOption.value = self.aCrops_id[i];
-            document.getElementById(comboBoxName).options.add(oOption);
+            $(comboBoxName)[0].options.add(oOption);
         }
-        document.getElementById(comboBoxName).selectedIndex = 0;
+        $(comboBoxName)[0].selectedIndex = 0;
     }
 
     /**
